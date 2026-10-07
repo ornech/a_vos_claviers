@@ -1,0 +1,1792 @@
+openapi: 3.0.3
+info:
+  title: API Aux Claviers Citoyens (ACC)
+  version: 2.2.0
+  description: |-
+    Contrat d'API de gestion des tournois e-sport — transcrit du *Cahier des charges développement v2.2* (CND).
+
+    Chaque opération reprend la **Description**, l'**Entrée**, la **Sortie** et l'éventuel **Effet de bord** du cahier des charges.
+
+    **Authentification (§3.B)** : l'API est en consultation libre ; les opérations de création, modification et suppression sont réservées aux utilisateurs connectés. L'authentification repose sur des jetons de session : la première consultation de l'API crée une session, et l'authentification y est stockée (cookie de session).
+servers:
+- url: http://localhost:8080
+  description: Serveur local de développement
+tags:
+- name: 1. Authentification
+- name: 2. Gestion des utilisateurs
+- name: 3. Gestion du tournoi
+- name: 4. Gestion des équipes
+- name: 5. Gestion des joueurs
+- name: 6. Gestion des jeux
+- name: 7. Gestion des matchs et des rounds
+paths:
+  /auth/login:
+    post:
+      tags:
+      - 1. Authentification
+      summary: User login
+      operationId: login
+      description: |
+        **Description :** C'est la fonction classique de connexion. Elle vérifie que votre e-mail et votre mot de passe sont corrects pour vous laisser entrer dans le système.
+
+        **Entrée :** votre adresse e-mail et votre mot de passe personnel.
+
+        **Sortie :** `200 OK` si réussi, `401 Unauthorized` sinon.
+
+        **Effet de bord :** la session doit maintenant contenir votre authentification ; votre jeton d'authentification est donc votre cookie de session.
+
+        🔓 **Accès :** consultation libre — cf. CDC §3.B.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+              required:
+              - email
+              - password
+      responses:
+        '200':
+          description: OK — connexion réussie
+          headers:
+            Set-Cookie:
+              description: Cookie de session contenant désormais l'authentification (jeton d'authentification)
+              schema:
+                type: string
+                example: SESSIONID=abc123; Path=/; HttpOnly; SameSite=Lax
+        '401':
+          description: Unauthorized — identifiants invalides
+  /auth/register:
+    post:
+      tags:
+      - 1. Authentification
+      summary: Register a new user
+      operationId: registerUser
+      description: |
+        **Description :** C'est la fonction d'inscription. Elle crée votre nouveau compte dans le système.
+
+        **Entrée :** votre adresse e-mail et le mot de passe que vous souhaitez utiliser.
+
+        **Sortie :** `201 Created` si réussi, `401 Unauthorized` sinon.
+
+        **Effet de bord :** la session doit maintenant contenir votre authentification ; votre jeton d'authentification est donc votre cookie de session.
+
+        🔓 **Accès :** consultation libre — cf. CDC §3.B.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  maxLength: 48
+              required:
+              - email
+              - password
+      responses:
+        '201':
+          description: Created — compte créé et authentifié dans la session
+          headers:
+            Set-Cookie:
+              description: Cookie de session contenant désormais l'authentification (jeton d'authentification)
+              schema:
+                type: string
+                example: SESSIONID=abc123; Path=/; HttpOnly; SameSite=Lax
+        '401':
+          description: Unauthorized — échec de l'inscription
+  /auth/me:
+    get:
+      tags:
+      - 1. Authentification
+      summary: Get the current authenticated user
+      operationId: getCurrentUser
+      description: |
+        **Description :** Permet de savoir qui vous êtes (votre profil) en tant qu'utilisateur actuellement connecté.
+
+        **Entrée :** le cookie de session.
+
+        **Sortie :** vos informations publiques : votre identifiant unique, votre e-mail et votre nom (s'il existe).
+
+        🔒 **Accès :** nécessite le cookie de session.
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: Profil de l'utilisateur connecté
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPublic'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /users/{id}:
+    get:
+      tags:
+      - 2. Gestion des utilisateurs
+      summary: Get a user by id
+      operationId: getUserById
+      description: |
+        **Description :** Récupère les informations d'un autre utilisateur en connaissant son numéro d'identification unique.
+
+        **Entrée :** le numéro d'identification (ID) de l'utilisateur recherché.
+
+        **Sortie :** les informations publiques de l'utilisateur (ID, e-mail, nom).
+
+        🔓 **Accès :** consultation libre — cf. CDC §3.B.
+      security: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Utilisateur trouvé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPublic'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags:
+      - 2. Gestion des utilisateurs
+      summary: Update user details
+      operationId: updateUser
+      description: |
+        **Description :** Permet de modifier vos informations personnelles, comme votre e-mail ou votre nom d'affichage.
+
+        **Entrée :** le numéro d'identification (ID) de votre compte, et les nouvelles informations que vous souhaitez modifier (votre nouvel e-mail ou nom).
+
+        **Sortie :** vos informations publiques mises à jour (ID, e-mail, nom).
+
+        🔒 **Accès :** réservé aux utilisateurs connectés (cookie de session) — cf. CDC §3.B.
+      security:
+      - cookieAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                name:
+                  type: string
+      responses:
+        '200':
+          description: Informations mises à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPublic'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /users/{id}/password:
+    put:
+      tags:
+      - 2. Gestion des utilisateurs
+      summary: Update user password
+      operationId: updateUserPassword
+      description: |
+        **Description :** Permet de changer votre mot de passe actuel.
+
+        **Entrée :** le numéro d'identification (ID) de votre compte et votre nouveau mot de passe (qui doit avoir entre 8 et 48 caractères).
+
+        **Sortie :** un message de succès confirmant que la mise à jour a été effectuée.
+
+        🔒 **Accès :** réservé aux utilisateurs connectés (cookie de session) — cf. CDC §3.B.
+      security:
+      - cookieAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newPassword:
+                  type: string
+                  format: password
+                  minLength: 8
+                  maxLength: 48
+              required:
+              - newPassword
+      responses:
+        '200':
+          description: Mot de passe mis à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /tournaments:
+    get:
+      tags:
+      - 3. Gestion du tournoi
+      summary: List tournaments
+      operationId: listTournaments
+      description: |
+        **Description :** Donne la liste complète de tous les tournois disponibles dans le système.
+
+        **Entrée :** aucune.
+
+        **Sortie :** une liste d'objets contenant pour chaque tournoi : son ID, son nom, le jeu pratiqué et son état actuel.
+
+        🔓 **Accès :** consultation libre — cf. CDC §3.B.
+      security: []
+      responses:
+        '200':
+          description: Liste des tournois
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tournament'
+    post:
+      tags:
+      - 3. Gestion du tournoi
+      summary: Create a tournament
+      operationId: createTournament
+      description: |
+        **Description :** Permet de créer et d'organiser un nouveau tournoi.
+
+        **Entrée :** le nom du tournoi, le jeu concerné, et le nombre d'équipes qui participeront (au moins 2).
+
+        **Sortie :** les détails du tournoi qui vient d'être créé.
+
+        🔒 **Accès :** réservé aux utilisateurs connectés (cookie de session) — cf. CDC §3.B.
+      security:
+      - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                gameId:
+                  type: string
+                  format: uuid
+                maxTeams:
+                  type: integer
+                  minimum: 2
+                startDate:
+                  type: string
+                  pattern: ^(0[1-9]|[12]\d|3[01])/(0[1-9]|1[0-2])/\d{4}$
+                  description: Format DD/MM/YYYY (CDC §3.A)
+                  example: 15/07/2026
+                endDate:
+                  type: string
+                  pattern: ^(0[1-9]|[12]\d|3[01])/(0[1-9]|1[0-2])/\d{4}$
+                  description: Format DD/MM/YYYY (CDC §3.A)
+                  example: 15/07/2026
+              required:
+              - name
+              - gameId
+              - maxTeams
+      responses:
+        '201':
+          description: Created — tournoi créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tournament'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /tournaments/{id}:
+    get:
+      tags:
+      - 3. Gestion du tournoi
+      summary: Get a tournament
+      operationId: getTournament
+      description: |
+        **Description :** Affiche les détails précis d'un tournoi en particulier.
+
+        **Entrée :** le numéro d'identification (ID) du tournoi.
+
+        **Sortie :** les détails du tournoi.
+
+        🔓 **Accès :** consultation libre — cf. CDC §3.B.
+      security: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Détails du tournoi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tournament'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags:
+      - 3. Gestion du tournoi
+      summary: Update a tournament
+      operationId: updateTournament
+      description: |
+        **Description :** Permet à l'organisateur de modifier les informations du tournoi (nom, jeu ou statut).
+
+        **Entrée :** le numéro d'identification (ID) du tournoi, et les informations à modifier (nom, jeu ou statut).
+
+        **Sortie :** les détails du tournoi mis à jour.
+
+        🔒 **Accès :** réservé aux utilisateurs connectés (cookie de session) — cf. CDC §3.B.
+      security:
+      - cookieAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                gameId:
+                  type: string
+                  format: uuid
+                status:
+                  type: boolean
+      responses:
+        '200':
+          description: Tournoi mis à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tournament'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+      - 3. Gestion du tournoi
+      summary: Delete a tournament
+      operationId: deleteTournament
+      description: |
+        **Description :** Permet de supprimer définitivement un tournoi du système.
+
+        **Entrée :** le numéro d'identification (ID) du tournoi.
+
+        **Sortie :** un message de succès confirmant la suppression.
+
+        🔒 **Accès :** réservé aux utilisateurs connectés (cookie de session) — cf. CDC §3.B.
+      security:
+      - cookieAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Tournoi supprimé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /tournaments/{tournamentId}/teams:
+    get:
+      tags:
+      - 4. Gestion des équipes
+      summary: List teams for a tournament
+      operationId: listTeams
+      description: |
+        **Description :** Donne la liste des équipes inscrites à un tournoi donné.
+
+        **Entrée :** le numéro d'identification (ID) du tournoi.
+
+        **Sortie :** une liste d'objets avec les détails de chaque équipe.
+
+        🔓 **Accès :** consultation libre — cf. CDC §3.B.
+      security: []
+      parameters:
+      - name: tournamentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Équipes du tournoi
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Team'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags:
+      - 4. Gestion des équipes
+      summary: Create a team in a tournament
+      operationId: createTeam
+      description: |
+        **Description :** Permet d'inscrire une nouvelle équipe dans un tournoi.
+
+        **Entrée :** le numéro d'identification (ID) du tournoi, l'URL d'image et le nom de la nouvelle équipe.
+
+        **Sortie :** les détails de l'équipe qui vient d'être créée.
+
+        🔒 **Accès :** réservé aux utilisateurs connectés (cookie de session) — cf. CDC §3.B.
+      security:
+      - cookieAuth: []
+      parameters:
+      - name: tournamentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                imageUrl:
+                  type: string
+                  format: uri
+              required:
+              - name
+              - imageUrl
+      responses:
+        '201':
+          description: Created — équipe créée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /tournaments/{tournamentId}/teams/{teamId}:
+    get:
+      tags:
+      - 4. Gestion des équipes
+      summary: Find a team
+      operationId: getTeam
+      description: |
+        **Description :** Affiche les détails précis d'une équipe dans un tournoi.
+
+        **Entrée :** l'ID de l'équipe et l'ID du tournoi.
+
+        **Sortie :** les détails de l'équipe.
+
+        🔓 **Accès :** consultation libre — cf. CDC §3.B.
+      security: []
+      parameters:
+      - name: tournamentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: teamId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Détails de l'équipe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags:
+      - 4. Gestion des équipes
+      summary: Update a team in a tournament
+      operationId: updateTeam
+      description: |
+        **Description :** Permet de changer le nom d'une équipe dans un tournoi.
+
+        **Entrée :** le numéro d'identification (ID) du tournoi, l'ID de l'équipe, et le nouveau nom (optionnel).
+
+        **Sortie :** les détails de l'équipe mise à jour.
+
+        🔒 **Accès :** réservé aux utilisateurs connectés (cookie de session) — cf. CDC §3.B.
+      security:
+      - cookieAuth: []
+      parameters:
+      - name: tournamentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: teamId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+      responses:
+        '200':
+          description: Équipe mise à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+      - 4. Gestion des équipes
+      summary: Remove a team from a tournament
+      operationId: deleteTeam
+      description: |
+        **Description :** Permet de retirer une équipe d'un tournoi.
+
+        **Entrée :** le numéro d'identification (ID) du tournoi et l'ID de l'équipe.
+
+        **Sortie :** un message de succès confirmant la suppression.
+
+        🔒 **Accès :** réservé aux utilisateurs connectés (cookie de session) — cf. CDC §3.B.
+      security:
+      - cookieAuth: []
+      parameters:
+      - name: tournamentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: teamId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Équipe retirée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /tournaments/{tournamentId}/teams/{teamId}/players:
+    post:
+      tags:
+      - 4. Gestion des équipes
+      summary: Add a player to a team
+      operationId: addPlayerToTeam
+      description: |
+        **Description :** Permet d'ajouter un·e athlète à une équipe.
+
+        **Entrée :** l'ID de l'athlète, l'ID du tournoi et l'ID de l'équipe.
+
+        **Sortie :** l'équipe avec sa liste des joueurs mise à jour.
+
+        🔒 **Accès :** réservé aux utilisateurs connectés (cookie de session) — cf. CDC §3.B.
+      security:
+      - cookieAuth: []
+      parameters:
+      - name: tournamentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: teamId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                playerId:
+                  type: string
+                  format: uuid
+              required:
+              - playerId
+      responses:
+        '200':
+          description: Équipe mise à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /tournaments/{tournamentId}/teams/{teamId}/players/{playerId}:
+    delete:
+      tags:
+      - 4. Gestion des équipes
+      summary: Remove a player from a team
+      operationId: removePlayerFromTeam
+      description: |
+        **Description :** Permet de retirer un·e athlète d'une équipe.
+
+        **Entrée :** l'ID de l'athlète, l'ID du tournoi et l'ID de l'équipe.
+
+        **Sortie :** l'équipe avec sa liste des joueurs mise à jour.
+
+        🔒 **Accès :** réservé aux utilisateurs connectés (cookie de session) — cf. CDC §3.B.
+      security:
+      - cookieAuth: []
+      parameters:
+      - name: tournamentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: teamId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: playerId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Équipe mise à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /players:
+    get:
+      tags:
+      - 5. Gestion des joueurs
+      summary: List players
+      operationId: listPlayers
+      description: |
+        **Description :** Donne la liste complète de tous les joueurs présent·e·s dans le système.
+
+        **Entrée :** aucune.
+
+        **Sortie :** une liste d'objets représentant chaque athlète et contenant leurs informations.
+
+        🔓 **Accès :** consultation libre — cf. CDC §3.B.
+      security: []
+      responses:
+        '200':
+          description: Liste des joueurs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Player'
+    post:
+      tags:
+      - 5. Gestion des joueurs
+      summary: Create a player
+      operationId: createPlayer
+      description: |
+        **Description :** Permet de créer un nouvel athlète.
+
+        **Entrée :** le tagname de l'athlète.
+
+        **Sortie :** `201 Created` avec les données de l'athlète créé·e, erreur sinon.
+
+        🔒 **Accès :** réservé aux utilisateurs connectés (cookie de session) — cf. CDC §3.B.
+      security:
+      - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tagname:
+                  type: string
+                avatarUrl:
+                  type: string
+                  format: uri
+              required:
+              - tagname
+      responses:
+        '201':
+          description: Created — joueur créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Player'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /players/{id}:
+    get:
+      tags:
+      - 5. Gestion des joueurs
+      summary: Get a player
+      operationId: getPlayer
+      description: |
+        **Description :** Affiche les détails précis d'un·e athlète.
+
+        **Entrée :** l'ID de l'athlète.
+
+        **Sortie :** les détails de l'athlète.
+
+        🔓 **Accès :** consultation libre — cf. CDC §3.B.
+      security: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Détails du joueur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Player'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags:
+      - 5. Gestion des joueurs
+      summary: Update a player
+      operationId: updatePlayer
+      description: |
+        **Description :** Permet de modifier les données d'un·e athlète.
+
+        **Entrée :** l'ID de l'athlète et les informations à mettre à jour.
+
+        **Sortie :** les détails de l'athlète mis à jour.
+
+        🔒 **Accès :** réservé aux utilisateurs connectés (cookie de session) — cf. CDC §3.B.
+      security:
+      - cookieAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tagname:
+                  type: string
+                avatarUrl:
+                  type: string
+                  format: uri
+      responses:
+        '200':
+          description: Joueur mis à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Player'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+      - 5. Gestion des joueurs
+      summary: Delete a player
+      operationId: deletePlayer
+      description: |
+        **Description :** Permet de supprimer définitivement un·e athlète du système.
+
+        **Entrée :** l'ID de l'athlète.
+
+        **Sortie :** un message de succès confirmant la suppression.
+
+        🔒 **Accès :** réservé aux utilisateurs connectés (cookie de session) — cf. CDC §3.B.
+      security:
+      - cookieAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Joueur supprimé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /games:
+    get:
+      tags:
+      - 6. Gestion des jeux
+      summary: List games
+      operationId: listGames
+      description: |
+        **Description :** Donne la liste complète des jeux présents dans le système.
+
+        **Entrée :** aucune.
+
+        **Sortie :** une liste d'objets représentant chaque jeu et contenant ses informations.
+
+        🔓 **Accès :** consultation libre — cf. CDC §3.B.
+      security: []
+      responses:
+        '200':
+          description: Liste des jeux
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Game'
+    post:
+      tags:
+      - 6. Gestion des jeux
+      summary: Create a game
+      operationId: createGame
+      description: |
+        **Description :** Permet d'ajouter un jeu au système.
+
+        **Entrée :** le titre du jeu et l'URL de son image.
+
+        **Sortie :** `201 Created` avec les données du jeu ajouté, erreur sinon.
+
+        🔒 **Accès :** réservé aux utilisateurs connectés (cookie de session) — cf. CDC §3.B.
+      security:
+      - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                imageUrl:
+                  type: string
+                  format: uri
+              required:
+              - title
+              - imageUrl
+      responses:
+        '201':
+          description: Created — jeu créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /games/{id}:
+    get:
+      tags:
+      - 6. Gestion des jeux
+      summary: Get a game
+      operationId: getGame
+      description: |
+        **Description :** Affiche les détails précis d'un jeu.
+
+        **Entrée :** l'ID du jeu.
+
+        **Sortie :** les détails du jeu.
+
+        🔓 **Accès :** consultation libre — cf. CDC §3.B.
+      security: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Détails du jeu
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags:
+      - 6. Gestion des jeux
+      summary: Update a game
+      operationId: updateGame
+      description: |
+        **Description :** Permet de modifier les données d'un jeu.
+
+        **Entrée :** l'ID du jeu et les informations à mettre à jour.
+
+        **Sortie :** les détails du jeu mis à jour.
+
+        🔒 **Accès :** réservé aux utilisateurs connectés (cookie de session) — cf. CDC §3.B.
+      security:
+      - cookieAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                imageUrl:
+                  type: string
+                  format: uri
+      responses:
+        '200':
+          description: Jeu mis à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+      - 6. Gestion des jeux
+      summary: Delete a game
+      operationId: deleteGame
+      description: |
+        **Description :** Permet de supprimer définitivement un jeu du système.
+
+        **Entrée :** l'ID du jeu.
+
+        **Sortie :** un message de succès confirmant la suppression.
+
+        🔒 **Accès :** réservé aux utilisateurs connectés (cookie de session) — cf. CDC §3.B.
+      security:
+      - cookieAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Jeu supprimé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /tournaments/{tournamentId}/rounds:
+    get:
+      tags:
+      - 7. Gestion des matchs et des rounds
+      summary: List rounds for a tournament
+      operationId: listRounds
+      description: |
+        **Description :** Donne la liste des tours de jeu (rounds) qui composent un tournoi.
+
+        **Entrée :** le numéro d'identification (ID) du tournoi.
+
+        **Sortie :** une liste d'objets décrivant chaque round (ID, nom et liste des IDs des matchs qui le composent).
+
+        🔓 **Accès :** consultation libre — cf. CDC §3.B.
+      security: []
+      parameters:
+      - name: tournamentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Rounds du tournoi
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Round'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags:
+      - 7. Gestion des matchs et des rounds
+      summary: Create rounds in a tournament
+      operationId: createRounds
+      description: |
+        **Description :** Crée un ensemble de rounds dans un tournoi.
+
+        **Entrée :** le numéro d'identification (ID) du tournoi et la liste des rounds (tableau JSON contenant, pour chaque round, l'ID et le numéro du round).
+
+        **Sortie :** le tournoi mis à jour avec une liste de rounds.
+
+        🔒 **Accès :** réservé aux utilisateurs connectés (cookie de session) — cf. CDC §3.B.
+      security:
+      - cookieAuth: []
+      parameters:
+      - name: tournamentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  roundNumber:
+                    type: integer
+                    minimum: 1
+                required:
+                - id
+                - roundNumber
+      responses:
+        '200':
+          description: Tournoi mis à jour avec ses rounds
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tournament'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /tournaments/{tournamentId}/rounds/{roundId}:
+    get:
+      tags:
+      - 7. Gestion des matchs et des rounds
+      summary: Get a round in a tournament
+      operationId: getRound
+      description: |
+        **Description :** Affiche les détails précis d'un tour de jeu (round) dans un tournoi.
+
+        **Entrée :** le numéro d'identification (ID) du tournoi et l'ID du round.
+
+        **Sortie :** les détails du round.
+
+        🔓 **Accès :** consultation libre — cf. CDC §3.B.
+      security: []
+      parameters:
+      - name: tournamentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: roundId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Détails du round
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Round'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+      - 7. Gestion des matchs et des rounds
+      summary: Delete a round in a tournament
+      operationId: deleteRound
+      description: |
+        **Description :** Supprime un round d'un tournoi.
+
+        **Entrée :** le numéro d'identification (ID) du tournoi et l'ID du round.
+
+        **Sortie :** le tournoi mis à jour avec une liste de rounds.
+
+        🔒 **Accès :** réservé aux utilisateurs connectés (cookie de session) — cf. CDC §3.B.
+      security:
+      - cookieAuth: []
+      parameters:
+      - name: tournamentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: roundId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Tournoi mis à jour avec ses rounds
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tournament'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /tournaments/{tournamentId}/matches:
+    get:
+      tags:
+      - 7. Gestion des matchs et des rounds
+      summary: List matches for a tournament
+      operationId: listMatches
+      description: |
+        **Description :** Donne la liste de tous les matchs prévus dans un tournoi.
+
+        **Entrée :** le numéro d'identification (ID) du tournoi.
+
+        **Sortie :** une liste d'objets décrivant chaque match (ID, IDs des deux équipes qui s'affrontent, et leurs scores respectifs).
+
+        🔓 **Accès :** consultation libre — cf. CDC §3.B.
+      security: []
+      parameters:
+      - name: tournamentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Matchs du tournoi
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Match'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /tournaments/{tournamentId}/matches/{matchId}:
+    get:
+      tags:
+      - 7. Gestion des matchs et des rounds
+      summary: Get a match in a tournament
+      operationId: getMatch
+      description: |
+        **Description :** Affiche les détails précis d'un match spécifique.
+
+        **Entrée :** le numéro d'identification (ID) du tournoi et l'ID du match.
+
+        **Sortie :** les détails du match.
+
+        🔓 **Accès :** consultation libre — cf. CDC §3.B.
+      security: []
+      parameters:
+      - name: tournamentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: matchId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Détails du match
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Match'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /rounds/{roundId}/matches:
+    post:
+      tags:
+      - 7. Gestion des matchs et des rounds
+      summary: Create a match in a round
+      operationId: createMatch
+      description: |
+        **Description :** Crée un match dans un round.
+
+        **Entrée :** l'ID du round, l'ID du match, le numéro du match et la liste des équipes.
+
+        **Sortie :** le round mis à jour avec la liste des matchs mise à jour.
+
+        🔒 **Accès :** réservé aux utilisateurs connectés (cookie de session) — cf. CDC §3.B.
+      security:
+      - cookieAuth: []
+      parameters:
+      - name: roundId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                matchNumber:
+                  type: integer
+                  minimum: 1
+                teamIds:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                  minItems: 2
+              required:
+              - id
+              - matchNumber
+              - teamIds
+      responses:
+        '201':
+          description: Created — round mis à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Round'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /rounds/{roundId}/matches/batch:
+    post:
+      tags:
+      - 7. Gestion des matchs et des rounds
+      summary: Create matches in a round
+      operationId: createMatches
+      description: |
+        **Description :** Crée un ensemble de matchs pour un round.
+
+        **Entrée :** l'ID du round et la liste des matchs à créer (tableau JSON contenant, pour chaque match, l'ID du match, le numéro du match et la liste des équipes).
+
+        **Sortie :** le round mis à jour avec la liste des matchs mise à jour.
+
+        🔒 **Accès :** réservé aux utilisateurs connectés (cookie de session) — cf. CDC §3.B.
+      security:
+      - cookieAuth: []
+      parameters:
+      - name: roundId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  matchNumber:
+                    type: integer
+                    minimum: 1
+                  teamIds:
+                    type: array
+                    items:
+                      type: string
+                      format: uuid
+                    minItems: 2
+                required:
+                - id
+                - matchNumber
+                - teamIds
+      responses:
+        '201':
+          description: Created — round mis à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Round'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /rounds/{roundId}/matches/{matchId}:
+    delete:
+      tags:
+      - 7. Gestion des matchs et des rounds
+      summary: Delete a match in a round
+      operationId: deleteMatch
+      description: |
+        **Description :** Supprime un match d'un round.
+
+        **Entrée :** le numéro d'identification (ID) du round et l'ID du match.
+
+        **Sortie :** le round mis à jour avec la liste des matchs mise à jour.
+
+        🔒 **Accès :** réservé aux utilisateurs connectés (cookie de session) — cf. CDC §3.B.
+      security:
+      - cookieAuth: []
+      parameters:
+      - name: roundId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: matchId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Round mis à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Round'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /tournaments/{tournamentId}/matches/{matchId}/scores:
+    put:
+      tags:
+      - 7. Gestion des matchs et des rounds
+      summary: Update match points
+      operationId: updateMatchScore
+      description: |
+        **Description :** Permet d'enregistrer le score pour une équipe dans un match en cours.
+
+        **Entrée :** le numéro d'identification (ID) du tournoi, l'ID du match, l'ID de l'équipe dont le score change, et le nouveau score de cette équipe.
+
+        **Sortie :** un message de succès confirmant la mise à jour.
+
+        🔒 **Accès :** réservé aux utilisateurs connectés (cookie de session) — cf. CDC §3.B.
+      security:
+      - cookieAuth: []
+      parameters:
+      - name: tournamentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: matchId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                teamId:
+                  type: string
+                  format: uuid
+                score:
+                  type: integer
+              required:
+              - teamId
+              - score
+      responses:
+        '200':
+          description: Score mis à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: SESSIONID
+      description: Cookie de session posé par /auth/login ou /auth/register. Adapter le nom au framework (JSESSIONID, PHPSESSID…).
+  responses:
+    Unauthorized:
+      description: Unauthorized — opération réservée aux utilisateurs connectés
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Not Found — ressource introuvable
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadRequest:
+      description: Bad Request — données invalides
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    Message:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Opération effectuée avec succès
+      required:
+      - message
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+      - message
+    UserPublic:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+          nullable: true
+      required:
+      - id
+      - email
+    Game:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          example: League of Legends
+        imageUrl:
+          type: string
+          format: uri
+      required:
+      - id
+      - title
+      - imageUrl
+    Tournament:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        status:
+          type: boolean
+          description: Actif (true) ou inactif (false)
+        startDate:
+          type: string
+          pattern: ^(0[1-9]|[12]\d|3[01])/(0[1-9]|1[0-2])/\d{4}$
+          description: Format DD/MM/YYYY (CDC §3.A)
+          example: 15/07/2026
+        endDate:
+          type: string
+          pattern: ^(0[1-9]|[12]\d|3[01])/(0[1-9]|1[0-2])/\d{4}$
+          description: Format DD/MM/YYYY (CDC §3.A)
+          example: 15/07/2026
+        maxTeams:
+          type: integer
+          minimum: 2
+        game:
+          $ref: '#/components/schemas/Game'
+        rounds:
+          type: array
+          items:
+            $ref: '#/components/schemas/Round'
+      required:
+      - id
+      - name
+      - status
+      - game
+    Team:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        imageUrl:
+          type: string
+          format: uri
+        points:
+          type: integer
+          description: Points remportés lors du tournoi (≠ score d'un match) — CDC §1
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/Player'
+      required:
+      - id
+      - name
+      - imageUrl
+      - points
+      - players
+    Player:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tagname:
+          type: string
+          example: DragonSlayer
+        avatarUrl:
+          type: string
+          format: uri
+        teamIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Équipes d'appartenance (CDC §3.A)
+      required:
+      - id
+      - tagname
+    Round:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        roundNumber:
+          type: integer
+          minimum: 1
+        tournamentId:
+          type: string
+          format: uuid
+        matchIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+      required:
+      - id
+      - roundNumber
+      - tournamentId
+      - matchIds
+    Match:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        matchNumber:
+          type: integer
+        roundId:
+          type: string
+          format: uuid
+        scores:
+          type: array
+          items:
+            type: object
+            properties:
+              teamId:
+                type: string
+                format: uuid
+              score:
+                type: integer
+            required:
+            - teamId
+            - score
+      required:
+      - id
+      - matchNumber
+      - roundId
+      - scores
+    Event:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        label:
+          type: string
+          example: Pentakill
+        points:
+          type: integer
+          example: 1
+        gameId:
+          type: string
+          format: uuid
+      required:
+      - id
+      - label
+      - points
+      - gameId
+      description: Évènement rapportant des points, spécifique à un jeu (CDC §1 et §3.A). Aucun endpoint n'est prévu au contrat
+        d'API.

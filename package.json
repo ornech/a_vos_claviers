@@ -1,0 +1,15 @@
+{
+  "name": "a-vos-claviers-api-contract",
+  "version": "2.2.0",
+  "private": true,
+  "description": "Contrat d'API ACC (OpenAPI) issu du Cahier des charges développement v2.2",
+  "scripts": {
+    "docs": "redocly preview-docs -p 8081 openapi.yaml",
+    "mock": "prism mock -p 4010 openapi.yaml",
+    "lint": "redocly lint openapi.yaml"
+  },
+  "devDependencies": {
+    "@redocly/cli": "^1",
+    "@stoplight/prism-cli": "^5"
+  }
+}

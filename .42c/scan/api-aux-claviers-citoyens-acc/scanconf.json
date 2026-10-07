@@ -1,0 +1,2285 @@
+{
+  "version": "2.0.0",
+  "runtimeConfiguration": {
+    "environment": "default",
+    "laxTestingModeEnabled": false,
+    "apiConnectivityCheck": true,
+    "logLevel": "error",
+    "logDestination": "stdout+platform",
+    "logMaxFileSize": 2147483648,
+    "requestHeaderNameRequestId": "x-scan-request-id",
+    "requestHeaderNameScenarioId": "x-scan-scenario-id",
+    "requestHeaderNameRequestType": "x-scan-request-type",
+    "requestFlowrate": 100,
+    "requestTimeout": 30,
+    "requestTlsInsecureSkipVerify": true,
+    "responseFollowRedirection": false,
+    "responseMaxBodySizeScan": 10485760,
+    "happyPathOnly": false,
+    "maxRequestRetryAttempts": 5,
+    "maxScanDuration": 1800,
+    "memoryLimit": 2147483648,
+    "memoryTimeSpan": 10,
+    "reportMaxRequestSizeHappyPath": 8092,
+    "reportMaxRequestSizeTest": 8092,
+    "reportIncludeRequestBody": true,
+    "reportIncludeResponseBody": true,
+    "reportMaxHttpResponseSizeHappyPath": 8092,
+    "reportMaxBodySizeHappyPath": 8092,
+    "reportMaxHttpResponseSizeTest": 8092,
+    "reportMaxBodySizeTest": 8092,
+    "reportIssuesOnly": false,
+    "reportMaxIssues": 1000,
+    "reportMaxSize": 20971520,
+    "reportGenerateCurlCommand": true,
+    "normalizeServerUrls": true
+  },
+  "customizations": {
+    "happyPaths": {
+      "retry": 1,
+      "responsePolicy": {
+        "httpStatusExpected": true,
+        "mustBeConformant": true
+      },
+      "httpStatusExpected": [
+        "2XX",
+        "404"
+      ]
+    },
+    "tests": {
+      "responsePolicy": {
+        "httpStatusExpected": true,
+        "mustBeConformant": true
+      }
+    },
+    "requests": {}
+  },
+  "environments": {
+    "default": {
+      "variables": {
+        "cookieAuth": {
+          "name": "SCAN42C_SECURITY_COOKIEAUTH",
+          "from": "environment",
+          "required": true
+        },
+        "host": {
+          "name": "SCAN42C_HOST",
+          "from": "environment",
+          "required": true,
+          "default": "http://localhost:8080"
+        }
+      }
+    }
+  },
+  "operations": {
+    "addPlayerToTeam": {
+      "operationId": "addPlayerToTeam",
+      "request": {
+        "operationId": "addPlayerToTeam",
+        "auth": [
+          "cookieAuth"
+        ],
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "addPlayerToTeam",
+            "method": "POST",
+            "url": "{{host}}/tournaments/{tournamentId}/teams/{teamId}/players",
+            "headers": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "paths": [
+              {
+                "key": "tournamentId",
+                "value": "3570cb79-4ff7-4b9c-bbee-0893361f86c9"
+              },
+              {
+                "key": "teamId",
+                "value": "500088a8-fe74-465c-9aa8-d93c0e59e425"
+              }
+            ],
+            "requestBody": {
+              "mode": "json",
+              "json": {
+                "playerId": "8fd10dd4-d858-4587-b584-22ffdef2ec15"
+              }
+            }
+          }
+        },
+        "defaultResponse": "200",
+        "responses": {
+          "200": {
+            "expectations": {
+              "httpStatus": 200
+            }
+          },
+          "400": {
+            "expectations": {
+              "httpStatus": 400
+            }
+          },
+          "401": {
+            "expectations": {
+              "httpStatus": 401
+            }
+          },
+          "404": {
+            "expectations": {
+              "httpStatus": 404
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/addPlayerToTeam/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    },
+    "createGame": {
+      "operationId": "createGame",
+      "request": {
+        "operationId": "createGame",
+        "auth": [
+          "cookieAuth"
+        ],
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "createGame",
+            "method": "POST",
+            "url": "{{host}}/games",
+            "headers": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "requestBody": {
+              "mode": "json",
+              "json": {
+                "imageUrl": "https://42crunch.com",
+                "title": "fzaexvcylximhjxymsnwykmoyhjxjpkq"
+              }
+            }
+          }
+        },
+        "defaultResponse": "201",
+        "responses": {
+          "201": {
+            "expectations": {
+              "httpStatus": 201
+            }
+          },
+          "400": {
+            "expectations": {
+              "httpStatus": 400
+            }
+          },
+          "401": {
+            "expectations": {
+              "httpStatus": 401
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/createGame/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    },
+    "createMatch": {
+      "operationId": "createMatch",
+      "request": {
+        "operationId": "createMatch",
+        "auth": [
+          "cookieAuth"
+        ],
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "createMatch",
+            "method": "POST",
+            "url": "{{host}}/rounds/{roundId}/matches",
+            "headers": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "paths": [
+              {
+                "key": "roundId",
+                "value": "278b2026-8431-4e42-ae8c-c8f4ce2f98b7"
+              }
+            ],
+            "requestBody": {
+              "mode": "json",
+              "json": {
+                "id": "f1ae4e3f-49eb-4b96-8e15-1edc0f50804a",
+                "matchNumber": 392720495177051840,
+                "teamIds": [
+                  "9db5a383-45b1-4df7-b5f3-a0de777ed45b",
+                  "9db5a383-45b1-4df7-b5f3-a0de777ed45b",
+                  "9db5a383-45b1-4df7-b5f3-a0de777ed45b"
+                ]
+              }
+            }
+          }
+        },
+        "defaultResponse": "201",
+        "responses": {
+          "201": {
+            "expectations": {
+              "httpStatus": 201
+            }
+          },
+          "400": {
+            "expectations": {
+              "httpStatus": 400
+            }
+          },
+          "401": {
+            "expectations": {
+              "httpStatus": 401
+            }
+          },
+          "404": {
+            "expectations": {
+              "httpStatus": 404
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/createMatch/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    },
+    "createMatches": {
+      "operationId": "createMatches",
+      "request": {
+        "operationId": "createMatches",
+        "auth": [
+          "cookieAuth"
+        ],
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "createMatches",
+            "method": "POST",
+            "url": "{{host}}/rounds/{roundId}/matches/batch",
+            "headers": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "paths": [
+              {
+                "key": "roundId",
+                "value": "de3f3c56-56a5-4900-b707-5c0642dd8f27"
+              }
+            ],
+            "requestBody": {
+              "mode": "json",
+              "json": [
+                {
+                  "id": "b55ef363-dd24-4d2a-a0be-db6c2d9945ba",
+                  "matchNumber": 7437774167010486000,
+                  "teamIds": [
+                    "efc17ea0-9739-467b-b4c4-812c28204d97",
+                    "efc17ea0-9739-467b-b4c4-812c28204d97",
+                    "efc17ea0-9739-467b-b4c4-812c28204d97",
+                    "efc17ea0-9739-467b-b4c4-812c28204d97"
+                  ]
+                },
+                {
+                  "id": "b55ef363-dd24-4d2a-a0be-db6c2d9945ba",
+                  "matchNumber": 7437774167010486000,
+                  "teamIds": [
+                    "efc17ea0-9739-467b-b4c4-812c28204d97",
+                    "efc17ea0-9739-467b-b4c4-812c28204d97",
+                    "efc17ea0-9739-467b-b4c4-812c28204d97",
+                    "efc17ea0-9739-467b-b4c4-812c28204d97"
+                  ]
+                },
+                {
+                  "id": "b55ef363-dd24-4d2a-a0be-db6c2d9945ba",
+                  "matchNumber": 7437774167010486000,
+                  "teamIds": [
+                    "efc17ea0-9739-467b-b4c4-812c28204d97",
+                    "efc17ea0-9739-467b-b4c4-812c28204d97",
+                    "efc17ea0-9739-467b-b4c4-812c28204d97",
+                    "efc17ea0-9739-467b-b4c4-812c28204d97"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        "defaultResponse": "201",
+        "responses": {
+          "201": {
+            "expectations": {
+              "httpStatus": 201
+            }
+          },
+          "400": {
+            "expectations": {
+              "httpStatus": 400
+            }
+          },
+          "401": {
+            "expectations": {
+              "httpStatus": 401
+            }
+          },
+          "404": {
+            "expectations": {
+              "httpStatus": 404
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/createMatches/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    },
+    "createPlayer": {
+      "operationId": "createPlayer",
+      "request": {
+        "operationId": "createPlayer",
+        "auth": [
+          "cookieAuth"
+        ],
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "createPlayer",
+            "method": "POST",
+            "url": "{{host}}/players",
+            "headers": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "requestBody": {
+              "mode": "json",
+              "json": {
+                "avatarUrl": "https://42crunch.com",
+                "tagname": "hudegaukrbsyseagfkeykrogdsuryzyx"
+              }
+            }
+          }
+        },
+        "defaultResponse": "201",
+        "responses": {
+          "201": {
+            "expectations": {
+              "httpStatus": 201
+            }
+          },
+          "400": {
+            "expectations": {
+              "httpStatus": 400
+            }
+          },
+          "401": {
+            "expectations": {
+              "httpStatus": 401
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/createPlayer/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    },
+    "createRounds": {
+      "operationId": "createRounds",
+      "request": {
+        "operationId": "createRounds",
+        "auth": [
+          "cookieAuth"
+        ],
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "createRounds",
+            "method": "POST",
+            "url": "{{host}}/tournaments/{tournamentId}/rounds",
+            "headers": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "paths": [
+              {
+                "key": "tournamentId",
+                "value": "1d9c1c0b-56c7-45ae-afe2-097250f54f5b"
+              }
+            ],
+            "requestBody": {
+              "mode": "json",
+              "json": [
+                {
+                  "id": "2d5182b6-3f9e-498f-b19e-d4bdaabc2a1f",
+                  "roundNumber": 1593759253766699000
+                },
+                {
+                  "id": "2d5182b6-3f9e-498f-b19e-d4bdaabc2a1f",
+                  "roundNumber": 1593759253766699000
+                },
+                {
+                  "id": "2d5182b6-3f9e-498f-b19e-d4bdaabc2a1f",
+                  "roundNumber": 1593759253766699000
+                },
+                {
+                  "id": "2d5182b6-3f9e-498f-b19e-d4bdaabc2a1f",
+                  "roundNumber": 1593759253766699000
+                }
+              ]
+            }
+          }
+        },
+        "defaultResponse": "200",
+        "responses": {
+          "200": {
+            "expectations": {
+              "httpStatus": 200
+            }
+          },
+          "400": {
+            "expectations": {
+              "httpStatus": 400
+            }
+          },
+          "401": {
+            "expectations": {
+              "httpStatus": 401
+            }
+          },
+          "404": {
+            "expectations": {
+              "httpStatus": 404
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/createRounds/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    },
+    "createTeam": {
+      "operationId": "createTeam",
+      "request": {
+        "operationId": "createTeam",
+        "auth": [
+          "cookieAuth"
+        ],
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "createTeam",
+            "method": "POST",
+            "url": "{{host}}/tournaments/{tournamentId}/teams",
+            "headers": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "paths": [
+              {
+                "key": "tournamentId",
+                "value": "937fa8dd-e063-4701-ad7b-96b24fa6d43a"
+              }
+            ],
+            "requestBody": {
+              "mode": "json",
+              "json": {
+                "imageUrl": "https://42crunch.com",
+                "name": "bocjakdzowllibdolvwtaakepkurorwb"
+              }
+            }
+          }
+        },
+        "defaultResponse": "201",
+        "responses": {
+          "201": {
+            "expectations": {
+              "httpStatus": 201
+            }
+          },
+          "400": {
+            "expectations": {
+              "httpStatus": 400
+            }
+          },
+          "401": {
+            "expectations": {
+              "httpStatus": 401
+            }
+          },
+          "404": {
+            "expectations": {
+              "httpStatus": 404
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/createTeam/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    },
+    "createTournament": {
+      "operationId": "createTournament",
+      "request": {
+        "operationId": "createTournament",
+        "auth": [
+          "cookieAuth"
+        ],
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "createTournament",
+            "method": "POST",
+            "url": "{{host}}/tournaments",
+            "headers": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "requestBody": {
+              "mode": "json",
+              "json": {
+                "endDate": "15/07/2026",
+                "gameId": "7ddd6602-a301-4d1a-b789-82673aa68f62",
+                "maxTeams": 4977700386862164000,
+                "name": "yvhnknrfewyryvtpfjrjefotprnivfsa",
+                "startDate": "15/07/2026"
+              }
+            }
+          }
+        },
+        "defaultResponse": "201",
+        "responses": {
+          "201": {
+            "expectations": {
+              "httpStatus": 201
+            }
+          },
+          "400": {
+            "expectations": {
+              "httpStatus": 400
+            }
+          },
+          "401": {
+            "expectations": {
+              "httpStatus": 401
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/createTournament/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    },
+    "deleteGame": {
+      "operationId": "deleteGame",
+      "request": {
+        "operationId": "deleteGame",
+        "auth": [
+          "cookieAuth"
+        ],
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "deleteGame",
+            "method": "DELETE",
+            "url": "{{host}}/games/{id}",
+            "paths": [
+              {
+                "key": "id",
+                "value": "c2965cf3-b3f5-4a85-ad2e-31fd32cb032f"
+              }
+            ]
+          }
+        },
+        "defaultResponse": "200",
+        "responses": {
+          "200": {
+            "expectations": {
+              "httpStatus": 200
+            }
+          },
+          "401": {
+            "expectations": {
+              "httpStatus": 401
+            }
+          },
+          "404": {
+            "expectations": {
+              "httpStatus": 404
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/deleteGame/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    },
+    "deleteMatch": {
+      "operationId": "deleteMatch",
+      "request": {
+        "operationId": "deleteMatch",
+        "auth": [
+          "cookieAuth"
+        ],
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "deleteMatch",
+            "method": "DELETE",
+            "url": "{{host}}/rounds/{roundId}/matches/{matchId}",
+            "paths": [
+              {
+                "key": "matchId",
+                "value": "50ac60bb-1caf-4cf8-b25e-434b95e101a0"
+              },
+              {
+                "key": "roundId",
+                "value": "e51140db-4201-43ff-9972-772facde772e"
+              }
+            ]
+          }
+        },
+        "defaultResponse": "200",
+        "responses": {
+          "200": {
+            "expectations": {
+              "httpStatus": 200
+            }
+          },
+          "401": {
+            "expectations": {
+              "httpStatus": 401
+            }
+          },
+          "404": {
+            "expectations": {
+              "httpStatus": 404
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/deleteMatch/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    },
+    "deletePlayer": {
+      "operationId": "deletePlayer",
+      "request": {
+        "operationId": "deletePlayer",
+        "auth": [
+          "cookieAuth"
+        ],
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "deletePlayer",
+            "method": "DELETE",
+            "url": "{{host}}/players/{id}",
+            "paths": [
+              {
+                "key": "id",
+                "value": "8cb050a1-a7b8-432a-a1f0-0b89e87b7337"
+              }
+            ]
+          }
+        },
+        "defaultResponse": "200",
+        "responses": {
+          "200": {
+            "expectations": {
+              "httpStatus": 200
+            }
+          },
+          "401": {
+            "expectations": {
+              "httpStatus": 401
+            }
+          },
+          "404": {
+            "expectations": {
+              "httpStatus": 404
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/deletePlayer/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    },
+    "deleteRound": {
+      "operationId": "deleteRound",
+      "request": {
+        "operationId": "deleteRound",
+        "auth": [
+          "cookieAuth"
+        ],
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "deleteRound",
+            "method": "DELETE",
+            "url": "{{host}}/tournaments/{tournamentId}/rounds/{roundId}",
+            "paths": [
+              {
+                "key": "tournamentId",
+                "value": "58cf5448-a020-4fc1-b127-cd5cf7f17c21"
+              },
+              {
+                "key": "roundId",
+                "value": "792bc189-f932-457c-92bd-27aeb3eecf8c"
+              }
+            ]
+          }
+        },
+        "defaultResponse": "200",
+        "responses": {
+          "200": {
+            "expectations": {
+              "httpStatus": 200
+            }
+          },
+          "401": {
+            "expectations": {
+              "httpStatus": 401
+            }
+          },
+          "404": {
+            "expectations": {
+              "httpStatus": 404
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/deleteRound/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    },
+    "deleteTeam": {
+      "operationId": "deleteTeam",
+      "request": {
+        "operationId": "deleteTeam",
+        "auth": [
+          "cookieAuth"
+        ],
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "deleteTeam",
+            "method": "DELETE",
+            "url": "{{host}}/tournaments/{tournamentId}/teams/{teamId}",
+            "paths": [
+              {
+                "key": "tournamentId",
+                "value": "d3db8398-17a3-4a91-b5dd-005699f5b4aa"
+              },
+              {
+                "key": "teamId",
+                "value": "653cfbc8-d3f0-4b00-b80e-c6902ce458a9"
+              }
+            ]
+          }
+        },
+        "defaultResponse": "200",
+        "responses": {
+          "200": {
+            "expectations": {
+              "httpStatus": 200
+            }
+          },
+          "401": {
+            "expectations": {
+              "httpStatus": 401
+            }
+          },
+          "404": {
+            "expectations": {
+              "httpStatus": 404
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/deleteTeam/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    },
+    "deleteTournament": {
+      "operationId": "deleteTournament",
+      "request": {
+        "operationId": "deleteTournament",
+        "auth": [
+          "cookieAuth"
+        ],
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "deleteTournament",
+            "method": "DELETE",
+            "url": "{{host}}/tournaments/{id}",
+            "paths": [
+              {
+                "key": "id",
+                "value": "75b20e45-e4f9-47fc-9a99-d04e18e2039d"
+              }
+            ]
+          }
+        },
+        "defaultResponse": "200",
+        "responses": {
+          "200": {
+            "expectations": {
+              "httpStatus": 200
+            }
+          },
+          "401": {
+            "expectations": {
+              "httpStatus": 401
+            }
+          },
+          "404": {
+            "expectations": {
+              "httpStatus": 404
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/deleteTournament/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    },
+    "getCurrentUser": {
+      "operationId": "getCurrentUser",
+      "request": {
+        "operationId": "getCurrentUser",
+        "auth": [
+          "cookieAuth"
+        ],
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "getCurrentUser",
+            "method": "GET",
+            "url": "{{host}}/auth/me"
+          }
+        },
+        "defaultResponse": "200",
+        "responses": {
+          "200": {
+            "expectations": {
+              "httpStatus": 200
+            }
+          },
+          "401": {
+            "expectations": {
+              "httpStatus": 401
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/getCurrentUser/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    },
+    "getGame": {
+      "operationId": "getGame",
+      "request": {
+        "operationId": "getGame",
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "getGame",
+            "method": "GET",
+            "url": "{{host}}/games/{id}",
+            "paths": [
+              {
+                "key": "id",
+                "value": "d5ddfbef-c5af-4215-8781-69c8527f7b97"
+              }
+            ]
+          }
+        },
+        "defaultResponse": "200",
+        "responses": {
+          "200": {
+            "expectations": {
+              "httpStatus": 200
+            }
+          },
+          "404": {
+            "expectations": {
+              "httpStatus": 404
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/getGame/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    },
+    "getMatch": {
+      "operationId": "getMatch",
+      "request": {
+        "operationId": "getMatch",
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "getMatch",
+            "method": "GET",
+            "url": "{{host}}/tournaments/{tournamentId}/matches/{matchId}",
+            "paths": [
+              {
+                "key": "tournamentId",
+                "value": "7fa0216a-67a7-401c-9add-09ce8526ca83"
+              },
+              {
+                "key": "matchId",
+                "value": "2a3a6137-d0bb-4a01-b8b2-18491ea453db"
+              }
+            ]
+          }
+        },
+        "defaultResponse": "200",
+        "responses": {
+          "200": {
+            "expectations": {
+              "httpStatus": 200
+            }
+          },
+          "404": {
+            "expectations": {
+              "httpStatus": 404
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/getMatch/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    },
+    "getPlayer": {
+      "operationId": "getPlayer",
+      "request": {
+        "operationId": "getPlayer",
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "getPlayer",
+            "method": "GET",
+            "url": "{{host}}/players/{id}",
+            "paths": [
+              {
+                "key": "id",
+                "value": "c2db150b-2ced-4fee-9317-c913e741edb7"
+              }
+            ]
+          }
+        },
+        "defaultResponse": "200",
+        "responses": {
+          "200": {
+            "expectations": {
+              "httpStatus": 200
+            }
+          },
+          "404": {
+            "expectations": {
+              "httpStatus": 404
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/getPlayer/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    },
+    "getRound": {
+      "operationId": "getRound",
+      "request": {
+        "operationId": "getRound",
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "getRound",
+            "method": "GET",
+            "url": "{{host}}/tournaments/{tournamentId}/rounds/{roundId}",
+            "paths": [
+              {
+                "key": "tournamentId",
+                "value": "7bc65d4d-ed81-4f81-b638-6b4a36c2ecb7"
+              },
+              {
+                "key": "roundId",
+                "value": "a4ad9509-2eff-4c3f-94a8-af0b63526e28"
+              }
+            ]
+          }
+        },
+        "defaultResponse": "200",
+        "responses": {
+          "200": {
+            "expectations": {
+              "httpStatus": 200
+            }
+          },
+          "404": {
+            "expectations": {
+              "httpStatus": 404
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/getRound/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    },
+    "getTeam": {
+      "operationId": "getTeam",
+      "request": {
+        "operationId": "getTeam",
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "getTeam",
+            "method": "GET",
+            "url": "{{host}}/tournaments/{tournamentId}/teams/{teamId}",
+            "paths": [
+              {
+                "key": "tournamentId",
+                "value": "c8c2c4de-55e1-4dee-8fa8-944a8fd8585e"
+              },
+              {
+                "key": "teamId",
+                "value": "4cf5aefb-19ff-4fdf-9051-fba3bf5e7ea0"
+              }
+            ]
+          }
+        },
+        "defaultResponse": "200",
+        "responses": {
+          "200": {
+            "expectations": {
+              "httpStatus": 200
+            }
+          },
+          "404": {
+            "expectations": {
+              "httpStatus": 404
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/getTeam/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    },
+    "getTournament": {
+      "operationId": "getTournament",
+      "request": {
+        "operationId": "getTournament",
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "getTournament",
+            "method": "GET",
+            "url": "{{host}}/tournaments/{id}",
+            "paths": [
+              {
+                "key": "id",
+                "value": "129e7cdc-c8fe-40a5-84a9-f89be8358a8e"
+              }
+            ]
+          }
+        },
+        "defaultResponse": "200",
+        "responses": {
+          "200": {
+            "expectations": {
+              "httpStatus": 200
+            }
+          },
+          "404": {
+            "expectations": {
+              "httpStatus": 404
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/getTournament/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    },
+    "getUserById": {
+      "operationId": "getUserById",
+      "request": {
+        "operationId": "getUserById",
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "getUserById",
+            "method": "GET",
+            "url": "{{host}}/users/{id}",
+            "paths": [
+              {
+                "key": "id",
+                "value": "582b971b-dd24-4d21-9347-3c7379f41c4b"
+              }
+            ]
+          }
+        },
+        "defaultResponse": "200",
+        "responses": {
+          "200": {
+            "expectations": {
+              "httpStatus": 200
+            }
+          },
+          "404": {
+            "expectations": {
+              "httpStatus": 404
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/getUserById/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    },
+    "listGames": {
+      "operationId": "listGames",
+      "request": {
+        "operationId": "listGames",
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "listGames",
+            "method": "GET",
+            "url": "{{host}}/games"
+          }
+        },
+        "defaultResponse": "200",
+        "responses": {
+          "200": {
+            "expectations": {
+              "httpStatus": 200
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/listGames/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    },
+    "listMatches": {
+      "operationId": "listMatches",
+      "request": {
+        "operationId": "listMatches",
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "listMatches",
+            "method": "GET",
+            "url": "{{host}}/tournaments/{tournamentId}/matches",
+            "paths": [
+              {
+                "key": "tournamentId",
+                "value": "b13873e3-fc42-4b3d-b76d-8d53586f2cf8"
+              }
+            ]
+          }
+        },
+        "defaultResponse": "200",
+        "responses": {
+          "200": {
+            "expectations": {
+              "httpStatus": 200
+            }
+          },
+          "404": {
+            "expectations": {
+              "httpStatus": 404
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/listMatches/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    },
+    "listPlayers": {
+      "operationId": "listPlayers",
+      "request": {
+        "operationId": "listPlayers",
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "listPlayers",
+            "method": "GET",
+            "url": "{{host}}/players"
+          }
+        },
+        "defaultResponse": "200",
+        "responses": {
+          "200": {
+            "expectations": {
+              "httpStatus": 200
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/listPlayers/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    },
+    "listRounds": {
+      "operationId": "listRounds",
+      "request": {
+        "operationId": "listRounds",
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "listRounds",
+            "method": "GET",
+            "url": "{{host}}/tournaments/{tournamentId}/rounds",
+            "paths": [
+              {
+                "key": "tournamentId",
+                "value": "49998887-e41a-4534-8ce4-67eeaaa0a8c4"
+              }
+            ]
+          }
+        },
+        "defaultResponse": "200",
+        "responses": {
+          "200": {
+            "expectations": {
+              "httpStatus": 200
+            }
+          },
+          "404": {
+            "expectations": {
+              "httpStatus": 404
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/listRounds/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    },
+    "listTeams": {
+      "operationId": "listTeams",
+      "request": {
+        "operationId": "listTeams",
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "listTeams",
+            "method": "GET",
+            "url": "{{host}}/tournaments/{tournamentId}/teams",
+            "paths": [
+              {
+                "key": "tournamentId",
+                "value": "967e2176-3b35-4ed6-8078-9a481c89d817"
+              }
+            ]
+          }
+        },
+        "defaultResponse": "200",
+        "responses": {
+          "200": {
+            "expectations": {
+              "httpStatus": 200
+            }
+          },
+          "404": {
+            "expectations": {
+              "httpStatus": 404
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/listTeams/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    },
+    "listTournaments": {
+      "operationId": "listTournaments",
+      "request": {
+        "operationId": "listTournaments",
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "listTournaments",
+            "method": "GET",
+            "url": "{{host}}/tournaments"
+          }
+        },
+        "defaultResponse": "200",
+        "responses": {
+          "200": {
+            "expectations": {
+              "httpStatus": 200
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/listTournaments/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    },
+    "login": {
+      "operationId": "login",
+      "request": {
+        "operationId": "login",
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "login",
+            "method": "POST",
+            "url": "{{host}}/auth/login",
+            "headers": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "requestBody": {
+              "mode": "json",
+              "json": {
+                "email": "email@email.com",
+                "password": "********"
+              }
+            }
+          }
+        },
+        "defaultResponse": "200",
+        "responses": {
+          "200": {
+            "expectations": {
+              "httpStatus": 200
+            }
+          },
+          "401": {
+            "expectations": {
+              "httpStatus": 401
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/login/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    },
+    "registerUser": {
+      "operationId": "registerUser",
+      "request": {
+        "operationId": "registerUser",
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "registerUser",
+            "method": "POST",
+            "url": "{{host}}/auth/register",
+            "headers": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "requestBody": {
+              "mode": "json",
+              "json": {
+                "email": "email@email.com",
+                "password": "********"
+              }
+            }
+          }
+        },
+        "defaultResponse": "201",
+        "responses": {
+          "201": {
+            "expectations": {
+              "httpStatus": 201
+            }
+          },
+          "401": {
+            "expectations": {
+              "httpStatus": 401
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/registerUser/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    },
+    "removePlayerFromTeam": {
+      "operationId": "removePlayerFromTeam",
+      "request": {
+        "operationId": "removePlayerFromTeam",
+        "auth": [
+          "cookieAuth"
+        ],
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "removePlayerFromTeam",
+            "method": "DELETE",
+            "url": "{{host}}/tournaments/{tournamentId}/teams/{teamId}/players/{playerId}",
+            "paths": [
+              {
+                "key": "teamId",
+                "value": "28f60625-ff80-45b9-a150-6f2de4c2bac6"
+              },
+              {
+                "key": "playerId",
+                "value": "9275c0da-2d23-47c2-96a9-10e3746fc863"
+              },
+              {
+                "key": "tournamentId",
+                "value": "05054ec6-c28b-45f5-8b48-b6bd019bb5b8"
+              }
+            ]
+          }
+        },
+        "defaultResponse": "200",
+        "responses": {
+          "200": {
+            "expectations": {
+              "httpStatus": 200
+            }
+          },
+          "401": {
+            "expectations": {
+              "httpStatus": 401
+            }
+          },
+          "404": {
+            "expectations": {
+              "httpStatus": 404
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/removePlayerFromTeam/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    },
+    "updateGame": {
+      "operationId": "updateGame",
+      "request": {
+        "operationId": "updateGame",
+        "auth": [
+          "cookieAuth"
+        ],
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "updateGame",
+            "method": "PUT",
+            "url": "{{host}}/games/{id}",
+            "headers": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "paths": [
+              {
+                "key": "id",
+                "value": "9c8a2044-ef90-4b72-b3f4-9bc9fc43a411"
+              }
+            ],
+            "requestBody": {
+              "mode": "json",
+              "json": {
+                "imageUrl": "https://42crunch.com",
+                "title": "egvawutuwavzyiqeoinwfryxhokzsqqg"
+              }
+            }
+          }
+        },
+        "defaultResponse": "200",
+        "responses": {
+          "200": {
+            "expectations": {
+              "httpStatus": 200
+            }
+          },
+          "400": {
+            "expectations": {
+              "httpStatus": 400
+            }
+          },
+          "401": {
+            "expectations": {
+              "httpStatus": 401
+            }
+          },
+          "404": {
+            "expectations": {
+              "httpStatus": 404
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/updateGame/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    },
+    "updateMatchScore": {
+      "operationId": "updateMatchScore",
+      "request": {
+        "operationId": "updateMatchScore",
+        "auth": [
+          "cookieAuth"
+        ],
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "updateMatchScore",
+            "method": "PUT",
+            "url": "{{host}}/tournaments/{tournamentId}/matches/{matchId}/scores",
+            "headers": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "paths": [
+              {
+                "key": "matchId",
+                "value": "f8cfc62a-a6c1-4376-a5af-fafc16e71e7a"
+              },
+              {
+                "key": "tournamentId",
+                "value": "1583afcb-44e6-4868-a93e-73c9b22da178"
+              }
+            ],
+            "requestBody": {
+              "mode": "json",
+              "json": {
+                "score": 4738898081772373000,
+                "teamId": "7df53a67-b81e-4965-b956-05b8e1fb37af"
+              }
+            }
+          }
+        },
+        "defaultResponse": "200",
+        "responses": {
+          "200": {
+            "expectations": {
+              "httpStatus": 200
+            }
+          },
+          "400": {
+            "expectations": {
+              "httpStatus": 400
+            }
+          },
+          "401": {
+            "expectations": {
+              "httpStatus": 401
+            }
+          },
+          "404": {
+            "expectations": {
+              "httpStatus": 404
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/updateMatchScore/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    },
+    "updatePlayer": {
+      "operationId": "updatePlayer",
+      "request": {
+        "operationId": "updatePlayer",
+        "auth": [
+          "cookieAuth"
+        ],
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "updatePlayer",
+            "method": "PUT",
+            "url": "{{host}}/players/{id}",
+            "headers": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "paths": [
+              {
+                "key": "id",
+                "value": "31acd02b-f7dd-428b-9589-452f70f1b8bc"
+              }
+            ],
+            "requestBody": {
+              "mode": "json",
+              "json": {
+                "avatarUrl": "https://42crunch.com",
+                "tagname": "qptkvawbxdgpzkafolsbmctsyfpqorpa"
+              }
+            }
+          }
+        },
+        "defaultResponse": "200",
+        "responses": {
+          "200": {
+            "expectations": {
+              "httpStatus": 200
+            }
+          },
+          "400": {
+            "expectations": {
+              "httpStatus": 400
+            }
+          },
+          "401": {
+            "expectations": {
+              "httpStatus": 401
+            }
+          },
+          "404": {
+            "expectations": {
+              "httpStatus": 404
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/updatePlayer/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    },
+    "updateTeam": {
+      "operationId": "updateTeam",
+      "request": {
+        "operationId": "updateTeam",
+        "auth": [
+          "cookieAuth"
+        ],
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "updateTeam",
+            "method": "PUT",
+            "url": "{{host}}/tournaments/{tournamentId}/teams/{teamId}",
+            "headers": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "paths": [
+              {
+                "key": "tournamentId",
+                "value": "b36b21ea-c538-409c-85ed-789ee41610a3"
+              },
+              {
+                "key": "teamId",
+                "value": "bd83bf23-89ab-44db-8589-0ed646a73ef2"
+              }
+            ],
+            "requestBody": {
+              "mode": "json",
+              "json": {
+                "name": "ymudtltwizlidadnhpxzpuybdqfrbyfz"
+              }
+            }
+          }
+        },
+        "defaultResponse": "200",
+        "responses": {
+          "200": {
+            "expectations": {
+              "httpStatus": 200
+            }
+          },
+          "400": {
+            "expectations": {
+              "httpStatus": 400
+            }
+          },
+          "401": {
+            "expectations": {
+              "httpStatus": 401
+            }
+          },
+          "404": {
+            "expectations": {
+              "httpStatus": 404
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/updateTeam/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    },
+    "updateTournament": {
+      "operationId": "updateTournament",
+      "request": {
+        "operationId": "updateTournament",
+        "auth": [
+          "cookieAuth"
+        ],
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "updateTournament",
+            "method": "PUT",
+            "url": "{{host}}/tournaments/{id}",
+            "headers": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "paths": [
+              {
+                "key": "id",
+                "value": "b502601d-2787-4226-b9f7-5e8d017a55bf"
+              }
+            ],
+            "requestBody": {
+              "mode": "json",
+              "json": {
+                "gameId": "c331ac70-6cc6-4e91-89b0-fa303c99e2a6",
+                "name": "umtjspuktjpbyjachcpfwuwlnfhnfbfl",
+                "status": true
+              }
+            }
+          }
+        },
+        "defaultResponse": "200",
+        "responses": {
+          "200": {
+            "expectations": {
+              "httpStatus": 200
+            }
+          },
+          "400": {
+            "expectations": {
+              "httpStatus": 400
+            }
+          },
+          "401": {
+            "expectations": {
+              "httpStatus": 401
+            }
+          },
+          "404": {
+            "expectations": {
+              "httpStatus": 404
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/updateTournament/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    },
+    "updateUser": {
+      "operationId": "updateUser",
+      "request": {
+        "operationId": "updateUser",
+        "auth": [
+          "cookieAuth"
+        ],
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "updateUser",
+            "method": "PUT",
+            "url": "{{host}}/users/{id}",
+            "headers": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "paths": [
+              {
+                "key": "id",
+                "value": "706f4399-a843-49ff-9cc8-17e0e94eb40f"
+              }
+            ],
+            "requestBody": {
+              "mode": "json",
+              "json": {
+                "email": "email@email.com",
+                "name": "doosxtqjizgfklkarnaikhnbrbouerln"
+              }
+            }
+          }
+        },
+        "defaultResponse": "200",
+        "responses": {
+          "200": {
+            "expectations": {
+              "httpStatus": 200
+            }
+          },
+          "400": {
+            "expectations": {
+              "httpStatus": 400
+            }
+          },
+          "401": {
+            "expectations": {
+              "httpStatus": 401
+            }
+          },
+          "404": {
+            "expectations": {
+              "httpStatus": 404
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/updateUser/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    },
+    "updateUserPassword": {
+      "operationId": "updateUserPassword",
+      "request": {
+        "operationId": "updateUserPassword",
+        "auth": [
+          "cookieAuth"
+        ],
+        "request": {
+          "type": "42c",
+          "details": {
+            "operationId": "updateUserPassword",
+            "method": "PUT",
+            "url": "{{host}}/users/{id}/password",
+            "headers": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "paths": [
+              {
+                "key": "id",
+                "value": "4a297a59-5086-4454-be3a-bef3df312d01"
+              }
+            ],
+            "requestBody": {
+              "mode": "json",
+              "json": {
+                "newPassword": "********"
+              }
+            }
+          }
+        },
+        "defaultResponse": "200",
+        "responses": {
+          "200": {
+            "expectations": {
+              "httpStatus": 200
+            }
+          },
+          "400": {
+            "expectations": {
+              "httpStatus": 400
+            }
+          },
+          "401": {
+            "expectations": {
+              "httpStatus": 401
+            }
+          },
+          "404": {
+            "expectations": {
+              "httpStatus": 404
+            }
+          }
+        }
+      },
+      "scenarios": [
+        {
+          "key": "happy.path",
+          "requests": [
+            {
+              "fuzzing": true,
+              "$ref": "#/operations/updateUserPassword/request"
+            }
+          ],
+          "fuzzing": true
+        }
+      ]
+    }
+  },
+  "authenticationDetails": [
+    {
+      "cookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "SESSIONID",
+        "default": "cookieAuth",
+        "credentials": {
+          "cookieAuth": {
+            "credential": "{{cookieAuth}}",
+            "description": "cookieAuth security"
+          }
+        }
+      }
+    }
+  ]
+}
