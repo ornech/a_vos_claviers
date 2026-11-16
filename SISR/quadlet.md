@@ -1,8 +1,27 @@
+.container (Non validé)
+Définit un conteneur	           
+``` bash
+podman run
+```
+.volume (Non validé)
+Crée un volume persistant
+``` bash
+podman volume create
+```
 
-Extension	      Rôle	                           Équivalent commande Podman
-.container	    Définit un conteneur	           podman run
-.volume	        Crée un volume persistant	       podman volume create
-.network	      Configure un réseau interne    	 podman network create
-.pod	          Regroupe plusieurs conteneurs    (Podman 5+)	podman pod create
-.image	        Gère le téléchargement d'image	 podman pull
-
+.network (Non validé)    
+Configure un réseau interne
+``` bash
+podman network create
+```
+.pod (Non validé)
+Regroupe plusieurs conteneur
+(Podman 5+)	
+``` bash
+podman pod create
+```
+.image (Non validé)
+Gère le téléchargement d'image
+``` bash
+podman pull
+```
